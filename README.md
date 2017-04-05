@@ -1,4 +1,8 @@
 # midsimple
+[![Build Status](https://travis-ci.org/DLag/midsimple.svg?branch=master)](https://travis-ci.org/DLag/midsimple)
+[![Go Report Card](https://goreportcard.com/badge/github.com/DLag/midsimple)](https://goreportcard.com/report/github.com/DLag/midsimple)
+[![codecov](https://codecov.io/gh/DLag/midsimple/branch/master/graph/badge.svg)](https://codecov.io/gh/DLag/midsimple)
+
 Simple Go HTTP middleware manager
 
 MidSimple delivers idiomatic and convenient way to chain classic `net/http` middlewares and wrap `http.Handler` and `http.HandlerFunc` types with it.
