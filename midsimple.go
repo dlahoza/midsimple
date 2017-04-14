@@ -1,10 +1,14 @@
 package midsimple
 
-import "net/http"
+import (
+	"net/http"
+	"sync"
+)
 
 // MidSimple simple middleware manager
 type MidSimple struct {
 	list []func(http.Handler) http.Handler
+	sync.Mutex
 }
 
 // New creates an instance of MidSimple middleware manager
@@ -23,12 +27,16 @@ func (wrapper *handlerFuncWrapper) ServeHTTP(w http.ResponseWriter, r *http.Requ
 
 // Use adds middleware to the queue
 func (m *MidSimple) Use(middleware ...func(http.Handler) http.Handler) *MidSimple {
+	m.Lock()
+	defer m.Unlock()
 	m.list = append(m.list, middleware...)
 	return m
 }
 
 // Wrap wraps the handler with middlewares from queue and returns wrapper version
 func (m *MidSimple) Wrap(handler http.Handler) http.Handler {
+	m.Lock()
+	defer m.Unlock()
 	res := handler
 	for i := len(m.list) - 1; i >= 0; i-- {
 		res = m.list[i](res)
@@ -38,12 +46,15 @@ func (m *MidSimple) Wrap(handler http.Handler) http.Handler {
 
 // WrapFunc wraps HandlerFunc with middlewares from queue and returns wrapper version
 func (m *MidSimple) WrapFunc(handlerFunc http.HandlerFunc) http.Handler {
+
 	handler := http.Handler(&handlerFuncWrapper{hfunc: handlerFunc})
 	return m.Wrap(handler)
 }
 
 // WrapRevert wraps the handler with middlewares from queue but in reverted sequence and returns wrapper version
 func (m *MidSimple) WrapRevert(handler http.Handler) http.Handler {
+	m.Lock()
+	defer m.Unlock()
 	res := handler
 	for i := range m.list {
 		res = m.list[i](res)
