@@ -23,7 +23,7 @@ c.Use(Middleware1)
 c.Use(Middleware2).Use(Middleware3).Use(Middleware3)
 // Variadic
 c.Use(Middleware4, Middleware5, Middleware6)
-// You can clean your chain with Reset and reuse the same memory block
+// You can clear your chain with Reset and reuse the same memory block
 c.Reset()
 // Madness ;-)
 c = New(Middleware0, Middleware1).

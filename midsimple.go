@@ -37,7 +37,7 @@ func (m *MidSimple) Use(middleware ...func(http.Handler) http.Handler) *MidSimpl
 	return m
 }
 
-// Reset cleans list of middlewares and allows use reuse it
+// Reset clears list of middlewares and allows use reuse it
 func (m *MidSimple) Reset() *MidSimple {
 	m.Lock()
 	defer m.Unlock()
