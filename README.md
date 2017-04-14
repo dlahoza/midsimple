@@ -42,3 +42,34 @@ func main() {
     http.ListenAndServe(":8000", chain.WrapFunc(myApp))
 }
 ```
+### Adding middlewares
+```go
+// Start from creating new chain
+c := midsimple.New()
+// Or adding some middleware from start
+c = midsimple.New(Middleware0)
+// Simple way
+c.Use(Middleware1)
+// Stacking
+c.Use(Middleware2).Use(Middleware3).Use(Middleware3)
+// Variadic
+c.Use(Middleware4, Middleware5, Middleware6)
+// You can clean your chain with Reset and reuse the same memory block
+c.Reset()
+// Madness :)
+c = New(Middleware0, Middleware1).
+        Use(Middleware2, Middleware3).
+        Reset().
+        Use(Middleware4).Use(Middleware5, Middleware6, Middleware7)
+```
+### Wrapping your handlers
+```go
+// You can wrap http.Handler or http.HandlerFunc
+c.Wrap(h http.Handler)
+c.WrapFunc(hf http.HandlerFunc)
+// You can revert order of middlewares
+c.WrapRevert(h http.Handler)
+c.WrapRevertFunc(hf http.HandlerFunc)
+// And use wrapped chain for your webserver
+http.ListenAndServe(":8080", c.Wrap(yourHandler))
+```

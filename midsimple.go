@@ -11,9 +11,13 @@ type MidSimple struct {
 	sync.Mutex
 }
 
-// New creates an instance of MidSimple middleware manager
-func New() *MidSimple {
-	return new(MidSimple)
+// New creates an instance of MidSimple middleware manager and adds middlewares if any
+func New(middleware ...func(http.Handler) http.Handler) *MidSimple {
+	ms := new(MidSimple)
+	if len(middleware) > 0 {
+		ms.Use(middleware...)
+	}
+	return ms
 }
 
 type handlerFuncWrapper struct {
@@ -25,11 +29,19 @@ func (wrapper *handlerFuncWrapper) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	wrapper.hfunc(w, r)
 }
 
-// Use adds middleware to the queue
+// Use adds middlewares to the queue
 func (m *MidSimple) Use(middleware ...func(http.Handler) http.Handler) *MidSimple {
 	m.Lock()
 	defer m.Unlock()
 	m.list = append(m.list, middleware...)
+	return m
+}
+
+// Reset cleans list of middlewares and allows use reuse it
+func (m *MidSimple) Reset() *MidSimple {
+	m.Lock()
+	defer m.Unlock()
+	m.list = m.list[:0]
 	return m
 }
 

@@ -37,8 +37,18 @@ func newTestMiddleware(result string) func(h http.Handler) http.Handler {
 
 func TestMidSimple_UseReturnsMidSimple(t *testing.T) {
 	ms := New()
-	returned_ms := ms.Use(newTestMiddleware("3"))
-	assert.Equal(t, ms, returned_ms)
+	returnedMs := ms.Use(newTestMiddleware("1"))
+	assert.Equal(t, ms, returnedMs)
+}
+
+func TestMidSimple_Reset(t *testing.T) {
+	ms := New()
+	ms.Use(newTestMiddleware("1"))
+	ms.Reset().
+		Use(newTestMiddleware("2"))
+	resp := httptest.NewRecorder()
+	ms.Wrap(&testHandler{result: "handler"}).ServeHTTP(resp, nil)
+	assert.Equal(t, []byte("2handler"), resp.Body.Bytes())
 }
 
 func TestHandlerFuncWrapper(t *testing.T) {
