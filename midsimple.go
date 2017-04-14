@@ -22,8 +22,9 @@ func (wrapper *handlerFuncWrapper) ServeHTTP(w http.ResponseWriter, r *http.Requ
 }
 
 // Use adds middleware to the queue
-func (m *MidSimple) Use(middleware func(http.Handler) http.Handler) {
-	m.list = append(m.list, middleware)
+func (m *MidSimple) Use(middleware ...func(http.Handler) http.Handler) *MidSimple {
+	m.list = append(m.list, middleware...)
+	return m
 }
 
 // Wrap wraps the handler with middlewares from queue and returns wrapper version

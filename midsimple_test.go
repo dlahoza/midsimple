@@ -35,6 +35,12 @@ func newTestMiddleware(result string) func(h http.Handler) http.Handler {
 	}
 }
 
+func TestMidSimple_UseReturnsMidSimple(t *testing.T) {
+	ms := New()
+	returned_ms := ms.Use(newTestMiddleware("3"))
+	assert.Equal(t, ms, returned_ms)
+}
+
 func TestHandlerFuncWrapper(t *testing.T) {
 	var success bool
 	h := handlerFuncWrapper{hfunc: func(http.ResponseWriter, *http.Request) { success = true }}
@@ -45,41 +51,45 @@ func TestHandlerFuncWrapper(t *testing.T) {
 func TestMidSimple_WrapHandlerRegular(t *testing.T) {
 	ms := New()
 	ms.Use(newTestMiddleware("1"))
-	ms.Use(newTestMiddleware("2"))
-	ms.Use(newTestMiddleware("3"))
+	ms.Use(newTestMiddleware("2"), newTestMiddleware("3"), newTestMiddleware("4")).
+		Use(newTestMiddleware("5"))
+	ms.Use(newTestMiddleware("6"))
 	resp := httptest.NewRecorder()
 	ms.Wrap(&testHandler{result: "handler"}).ServeHTTP(resp, nil)
-	assert.Equal(t, []byte("123handler"), resp.Body.Bytes())
+	assert.Equal(t, []byte("123456handler"), resp.Body.Bytes())
 }
 
 func TestMidSimple_WrapHandlerRevert(t *testing.T) {
 	ms := New()
 	ms.Use(newTestMiddleware("1"))
-	ms.Use(newTestMiddleware("2"))
-	ms.Use(newTestMiddleware("3"))
+	ms.Use(newTestMiddleware("2"), newTestMiddleware("3"), newTestMiddleware("4")).
+		Use(newTestMiddleware("5"))
+	ms.Use(newTestMiddleware("6"))
 	resp := httptest.NewRecorder()
 	ms.WrapRevert(&testHandler{result: "handler"}).ServeHTTP(resp, nil)
-	assert.Equal(t, []byte("321handler"), resp.Body.Bytes())
+	assert.Equal(t, []byte("654321handler"), resp.Body.Bytes())
 }
 
 func TestMidSimple_WrapHandlerFuncRegular(t *testing.T) {
 	ms := New()
 	ms.Use(newTestMiddleware("1"))
-	ms.Use(newTestMiddleware("2"))
-	ms.Use(newTestMiddleware("3"))
+	ms.Use(newTestMiddleware("2"), newTestMiddleware("3"), newTestMiddleware("4")).
+		Use(newTestMiddleware("5"))
+	ms.Use(newTestMiddleware("6"))
 
 	resp := httptest.NewRecorder()
 	ms.WrapFunc((&testHandler{result: "handler"}).ServeHTTP).ServeHTTP(resp, nil)
-	assert.Equal(t, []byte("123handler"), resp.Body.Bytes())
+	assert.Equal(t, []byte("123456handler"), resp.Body.Bytes())
 }
 
 func TestMidSimple_WrapHandlerFuncRevert(t *testing.T) {
 	ms := New()
 	ms.Use(newTestMiddleware("1"))
-	ms.Use(newTestMiddleware("2"))
-	ms.Use(newTestMiddleware("3"))
+	ms.Use(newTestMiddleware("2"), newTestMiddleware("3"), newTestMiddleware("4")).
+		Use(newTestMiddleware("5"))
+	ms.Use(newTestMiddleware("6"))
 
 	resp := httptest.NewRecorder()
 	ms.WrapRevertFunc((&testHandler{result: "handler"}).ServeHTTP).ServeHTTP(resp, nil)
-	assert.Equal(t, []byte("321handler"), resp.Body.Bytes())
+	assert.Equal(t, []byte("654321handler"), resp.Body.Bytes())
 }
