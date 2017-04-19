@@ -23,6 +23,12 @@ c.Use(Middleware1)
 c.Use(Middleware2).Use(Middleware3).Use(Middleware3)
 // Variadic
 c.Use(Middleware4, Middleware5, Middleware6)
+// Splitting
+c2 := c.Split().Use(Middleware10)
+c.Use(Middleware6)
+// c  contains 0, 1, 2, 3, 4, 5, 6
+// c2 contains 0, 1, 2, 3, 4, 5, 10
+// 
 // You can clear your chain with Reset and reuse the same memory block
 c.Reset()
 // Madness ;-)

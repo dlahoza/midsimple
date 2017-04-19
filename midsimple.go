@@ -37,6 +37,13 @@ func (m *MidSimple) Use(middleware ...func(http.Handler) http.Handler) *MidSimpl
 	return m
 }
 
+// Split creates copy of the chain to split the middleware flow
+func (m *MidSimple) Split() *MidSimple {
+	n := make([]func(http.Handler) http.Handler, len(m.list))
+	copy(n, m.list)
+	return &MidSimple{list: n}
+}
+
 // Reset clears list of middlewares and allows use reuse it
 func (m *MidSimple) Reset() *MidSimple {
 	m.Lock()

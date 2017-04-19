@@ -110,3 +110,19 @@ func TestMidSimple_WrapHandlerFuncRevert(t *testing.T) {
 	ms.WrapRevertFunc((&testHandler{result: "handler"}).ServeHTTP).ServeHTTP(resp, nil)
 	assert.Equal(t, []byte("654321handler"), resp.Body.Bytes())
 }
+
+func TestMidSimple_WrapHandlerFuncRegularSplit(t *testing.T) {
+	ms := New()
+	ms.Use(newTestMiddleware("1"))
+	ms.Use(newTestMiddleware("2"), newTestMiddleware("3"), newTestMiddleware("4")).Use(newTestMiddleware("5"))
+	ms2 := ms.Split().Use(newTestMiddleware("6b"))
+	ms.Use(newTestMiddleware("6a"))
+
+	resp := httptest.NewRecorder()
+	ms.WrapFunc((&testHandler{result: "handler"}).ServeHTTP).ServeHTTP(resp, nil)
+	assert.Equal(t, "123456ahandler", resp.Body.String())
+
+	resp = httptest.NewRecorder()
+	ms2.WrapFunc((&testHandler{result: "handler"}).ServeHTTP).ServeHTTP(resp, nil)
+	assert.Equal(t, "123456bhandler", resp.Body.String())
+}
